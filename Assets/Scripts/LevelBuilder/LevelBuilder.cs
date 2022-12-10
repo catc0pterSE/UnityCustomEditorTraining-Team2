@@ -23,9 +23,9 @@ public class LevelBuilder : EditorWindow
     private int _selectedElement;
     private List<GameObject> _catalog = new List<GameObject>();
     private bool _building;
-    private int _selectedTabNumber = 0;
+    private int _selectedTabNumber;
     private string[] _tabNames = { "Buildings", "Plants", "Props", "Rocks", "Skeletons", "ShipWreck" };
-    private GameObject _createdObject;
+    private GameObject _createdObject = null;
     private GameObject _parent;
     private LayerMask _layerMask;
 
@@ -35,14 +35,23 @@ public class LevelBuilder : EditorWindow
         GetWindow(typeof(LevelBuilder));
     }
 
-    private void OnFocus()
+    private void OnEnable()
+    {
+        SceneView.duringSceneGui += OnSceneGUI;
+    }
+
+    private void OnDisable()
     {
         SceneView.duringSceneGui -= OnSceneGUI;
-        SceneView.duringSceneGui += OnSceneGUI;
     }
 
     private void OnGUI()
     {
+        _parent = (GameObject)EditorGUILayout.ObjectField("Parent", _parent, typeof(GameObject), true);
+
+        if (_parent == null)
+            return;
+
         _selectedTabNumber = GUILayout.Toolbar(_selectedTabNumber, _tabNames);
 
         switch (_selectedTabNumber)
@@ -75,7 +84,6 @@ public class LevelBuilder : EditorWindow
     private void DrawGrid(string assetPath)
     {
         RefreshCatalog(assetPath);
-        _parent = (GameObject)EditorGUILayout.ObjectField("Parent", _parent, typeof(GameObject), true);
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         _building = GUILayout.Toggle(_building, "Start building", "Button", GUILayout.Height(60));
@@ -91,11 +99,13 @@ public class LevelBuilder : EditorWindow
     {
         if (_building == false)
             return;
-
+        
         sceneView.Focus();
 
         if (_createdObject == null)
+        {
             CreateObject();
+        }
 
         if (Raycast(out Vector3 contactPoint))
         {
@@ -134,8 +144,8 @@ public class LevelBuilder : EditorWindow
                 ).Length > 0)
                 return;
 
-            _building = false;
             _createdObject.layer = LayerMask.NameToLayer(_propLayerName);
+            _building = false;
             _createdObject = null;
         }
     }
