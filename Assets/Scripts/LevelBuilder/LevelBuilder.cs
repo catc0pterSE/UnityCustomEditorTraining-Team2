@@ -40,12 +40,7 @@ public class LevelBuilder : EditorWindow
         SceneView.duringSceneGui += OnSceneGUI;
     }
 
-    /*private void OnLostFocus()
-    {
-        SceneView.duringSceneGui -= OnSceneGUI;
-    }*/
-
-    private void OnGUI()
+   private void OnGUI()
     {
         _selectedTabNumber = GUILayout.Toolbar(_selectedTabNumber, _tabNames);
 
@@ -142,22 +137,6 @@ public class LevelBuilder : EditorWindow
     private bool CheckScaleInput(out Vector3 newScale)
     {
         newScale = _createdObject.transform.localScale;
-
-        /*if (Event.current.type == EventType.ScrollWheel)
-        {
-            if (Event.current.delta.y > 0)
-            {
-                newScale *= _scaleSpeed;
-                return true;
-            }
-
-            if (Event.current.delta.y < 0)
-            {
-                newScale /= _scaleSpeed;
-                return true;
-            }
-        }
-        */
 
         if (Event.current.type == EventType.KeyDown)
         {
