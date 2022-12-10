@@ -50,6 +50,8 @@ public class LevelBuilder : EditorWindow
                 DrawAssetTab(_pathProps, 400, 10000);
                 break;
         }
+
+        EditorGUILayout.HelpBox("To rotate the object, use the Q and E buttons. Q counterclockwise and E clockwise", MessageType.Info);
     }
 
     private void DrawAssetTab(string assetPath, int width, int height)
