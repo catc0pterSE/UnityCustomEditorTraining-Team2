@@ -14,6 +14,7 @@ public class LevelBuilder : EditorWindow
     private const string _pathSkeletons = "Assets/Editor Resources/Skeletons";
     private const string _pathShip = "Assets/Editor Resources/ShipWreck";
     private const float _rotationSpeed = 2;
+    private const float _scaleSpeed = 1.3f;
 
     private readonly Vector2 _iconDimensions = new Vector2(100, 100);
 
@@ -25,8 +26,6 @@ public class LevelBuilder : EditorWindow
     private string[] _tabNames = { "Buildings", "Plants", "Props", "Rocks", "Skeletons", "ShipWreck" };
     private GameObject _createdObject;
     private GameObject _parent;
-    private float _runningTime;
-    private bool _isSubscribedOnSceneGUI;
 
     [MenuItem("Level/Builder")]
     private static void ShowWindow()
@@ -36,11 +35,8 @@ public class LevelBuilder : EditorWindow
 
     private void OnFocus()
     {
-        if (_isSubscribedOnSceneGUI == false)
-        {
-            SceneView.duringSceneGui += OnSceneGUI;
-            _isSubscribedOnSceneGUI = true;
-        }
+        SceneView.duringSceneGui -= OnSceneGUI;
+        SceneView.duringSceneGui += OnSceneGUI;
     }
 
     private void OnGUI()
@@ -69,7 +65,8 @@ public class LevelBuilder : EditorWindow
                 break;
         }
 
-        EditorGUILayout.HelpBox("To rotate the object, use the Q and E buttons. Q counterclockwise and E clockwise",
+        EditorGUILayout.HelpBox(
+            "To rotate the object, use the Q and E buttons. Q counterclockwise and E clockwise\nTo upscale object use W, to downscale use S",
             MessageType.Info);
     }
 
@@ -105,7 +102,7 @@ public class LevelBuilder : EditorWindow
         {
             if (Raycast(out Vector3 contactPoint))
             {
-                DrawPounter(contactPoint, Color.red);
+                DrawPointer(contactPoint, Color.red);
 
                 if (CheckInput())
                 {
@@ -120,7 +117,7 @@ public class LevelBuilder : EditorWindow
     private void OnSceneGUI(SceneView sceneView)
     {
         sceneView.Focus();
-        
+
         if (_building)
         {
             if (_createdObject == null)
@@ -128,28 +125,75 @@ public class LevelBuilder : EditorWindow
 
             if (Raycast(out Vector3 contactPoint))
             {
-                Debug.Log(_createdObject);
-
-
                 DrawPointer(contactPoint, Color.red);
-                _createdObject.transform.position = contactPoint;
 
-                if (CheckRotationInput(out Vector3 rotation))
-                {
-                    Quaternion quaternion = _createdObject.transform.rotation;
-                    quaternion.eulerAngles = rotation;
-                    _createdObject.transform.rotation = quaternion;
-                }
-
-                if (CheckPlacementInput())
-                {
-                    _building = false;
-                    _createdObject = null;
-                }
+                ManipulateCreatedObject(contactPoint);
 
                 sceneView.Repaint();
             }
         }
+    }
+
+    private void ManipulateCreatedObject(Vector3 contactPoint)
+    {
+        _createdObject.transform.position = contactPoint;
+
+        if (CheckRotationInput(out Vector3 rotation))
+        {
+            Quaternion quaternion = _createdObject.transform.rotation;
+            quaternion.eulerAngles = rotation;
+            _createdObject.transform.rotation = quaternion;
+        }
+
+        if (CheckScaleInput(out Vector3 newScale))
+        {
+            _createdObject.transform.localScale = newScale;
+        }
+
+        if (CheckPlacementInput())
+        {
+            _building = false;
+            _createdObject = null;
+        }
+    }
+
+    private bool CheckScaleInput(out Vector3 newScale)
+    {
+        newScale = _createdObject.transform.localScale;
+
+        /*if (Event.current.type == EventType.ScrollWheel && Event.current.type == EventType.KeyDown)
+        {
+            Debug.Log("!");
+            if (Event.current.delta.y > 0)
+            {
+                newScale *= _scaleSpeed;
+                return true;
+            }
+
+            if (Event.current.delta.y < 0)
+            {
+                newScale /= _scaleSpeed;
+                return true;
+            }
+        }
+        */
+
+        if (Event.current.type == EventType.KeyDown)
+        {
+            if (Event.current.keyCode == KeyCode.W)
+            {
+                newScale *= _scaleSpeed;
+                return true;
+            }
+
+            if (Event.current.keyCode == KeyCode.S)
+            {
+                newScale /= _scaleSpeed;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private bool CheckRotationInput(out Vector3 rotation)
@@ -232,8 +276,8 @@ public class LevelBuilder : EditorWindow
 
     private void DrawCatalog(List<GUIContent> catalogIcons)
     {
-        int xIconCount = (int)position.width / (int)_iconDimensions.x;
-        int yIconCount = catalogIcons.Count / xIconCount;
+        int xIconCount = Mathf.Clamp((int)position.width / (int)_iconDimensions.x, min: 1, Int32.MaxValue);
+        int yIconCount = Mathf.Clamp(catalogIcons.Count / xIconCount, min: 1, Int32.MaxValue);
         float width = xIconCount * _iconDimensions.x;
         float height = yIconCount * _iconDimensions.y;
 
