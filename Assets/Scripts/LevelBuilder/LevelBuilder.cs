@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,6 +14,7 @@ public class LevelBuilder : EditorWindow
     private const string _pathShip = "Assets/Editor Resources/ShipWreck";
     private const float _rotationSpeed = 2;
     private const float _scaleSpeed = 1.3f;
+    private const string _propLayerName = "Prop";
 
     private readonly Vector2 _iconDimensions = new Vector2(100, 100);
 
@@ -26,6 +26,7 @@ public class LevelBuilder : EditorWindow
     private string[] _tabNames = { "Buildings", "Plants", "Props", "Rocks", "Skeletons", "ShipWreck" };
     private GameObject _createdObject;
     private GameObject _parent;
+    private LayerMask _layerMask;
 
     [MenuItem("Level/Builder")]
     private static void ShowWindow()
@@ -38,6 +39,11 @@ public class LevelBuilder : EditorWindow
         SceneView.duringSceneGui -= OnSceneGUI;
         SceneView.duringSceneGui += OnSceneGUI;
     }
+
+    /*private void OnLostFocus()
+    {
+        SceneView.duringSceneGui -= OnSceneGUI;
+    }*/
 
     private void OnGUI()
     {
@@ -87,19 +93,17 @@ public class LevelBuilder : EditorWindow
 
     private void OnSceneGUI(SceneView sceneView)
     {
-        sceneView.Focus();
-
         if (_building)
         {
+            sceneView.Focus();
+
             if (_createdObject == null)
                 CreateObject();
 
             if (Raycast(out Vector3 contactPoint))
             {
-                DrawPointer(contactPoint, Color.red);
-
                 ManipulateCreatedObject(contactPoint);
-
+                DrawPointer(Color.red);
                 sceneView.Repaint();
             }
         }
@@ -123,7 +127,14 @@ public class LevelBuilder : EditorWindow
 
         if (CheckPlacementInput())
         {
+            Bounds bounds = GetCreatedObjectBounds();
+
+            if (Physics.OverlapBox(bounds.center, bounds.size / 2, _createdObject.transform.rotation,
+                    LayerMask.GetMask(_propLayerName)).Length > 0)
+                return;
+
             _building = false;
+            _createdObject.layer = LayerMask.NameToLayer(_propLayerName);
             _createdObject = null;
         }
     }
@@ -203,10 +214,20 @@ public class LevelBuilder : EditorWindow
         return false;
     }
 
-    private void DrawPointer(Vector3 position, Color color)
+    private void DrawPointer(Color color)
     {
+        Bounds bounds = GetCreatedObjectBounds();
+
         Handles.color = color;
-        Handles.DrawWireCube(position, Vector3.one);
+        Handles.DrawWireCube(bounds.center, bounds.size);
+    }
+
+    private Bounds GetCreatedObjectBounds()
+    {
+        if (_createdObject != null)
+            return _createdObject.GetComponent<MeshRenderer>().bounds;
+
+        return new Bounds(Vector3.zero, Vector3.zero);
     }
 
     private bool CheckPlacementInput()
