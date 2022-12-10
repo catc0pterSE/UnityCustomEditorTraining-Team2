@@ -1,26 +1,31 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using System.IO;
+using Unity.VisualScripting;
 using UnityEditor;
-using UnityEngine.UIElements;
+using UnityEngine;
 
 public class LevelBuilder : EditorWindow
 {
     private const string _pathBuildings = "Assets/Editor Resources/Buildings";
     private const string _pathProps = "Assets/Editor Resources/Props";
     private const string _pathPlants = "Assets/Editor Resources/Plants";
+    private const string _pathRocks = "Assets/Editor Resources/Rocks";
+    private const string _pathSkeletons = "Assets/Editor Resources/Skeletons";
+    private const string _pathShip = "Assets/Editor Resources/ShipWreck";
     private const float _rotationSpeed = 2;
+
+    private readonly Vector2 _iconDimensions = new Vector2(100, 100);
 
     private Vector2 _scrollPosition;
     private int _selectedElement;
     private List<GameObject> _catalog = new List<GameObject>();
     private bool _building;
     private int _selectedTabNumber = 0;
-    private string[] _tabNames = { "Buildings", "Plants", "Props" };
+    private string[] _tabNames = { "Buildings", "Plants", "Props", "Rocks", "Skeletons", "ShipWreck" };
     private GameObject _createdObject;
     private GameObject _parent;
-
+    private float _runningTime;
 
     [MenuItem("Level/Builder")]
     private static void ShowWindow()
@@ -37,29 +42,40 @@ public class LevelBuilder : EditorWindow
     private void OnGUI()
     {
         _selectedTabNumber = GUILayout.Toolbar(_selectedTabNumber, _tabNames);
-        // position.width - размеры окна
-        switch (_selectedTabNumber) //TODO: scale grid size automatically
+
+        switch (_selectedTabNumber)
         {
             case 0:
-                DrawAssetTab(_pathBuildings, 400, 1000);
+                DrawGrid(_pathBuildings);
                 break;
             case 1:
-                DrawAssetTab(_pathPlants, 400, 1000);
+                DrawGrid(_pathPlants);
                 break;
             case 2:
-                DrawAssetTab(_pathProps, 400, 10000);
+                DrawGrid(_pathProps);
+                break;
+            case 3:
+                DrawGrid(_pathRocks);
+                break;
+            case 4:
+                DrawGrid(_pathSkeletons);
+                break;
+            case 5:
+                DrawGrid(_pathShip);
                 break;
         }
 
-        EditorGUILayout.HelpBox("To rotate the object, use the Q and E buttons. Q counterclockwise and E clockwise", MessageType.Info);
+        EditorGUILayout.HelpBox("To rotate the object, use the Q and E buttons. Q counterclockwise and E clockwise",
+            MessageType.Info);
     }
 
-    private void DrawAssetTab(string assetPath, int width, int height)
+    private void DrawGrid(string assetPath)
     {
         RefreshCatalog(assetPath);
         _parent = (GameObject)EditorGUILayout.ObjectField("Parent", _parent, typeof(GameObject), true);
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-        if (_createdObject != null)
+
+        /*if (_createdObject != null)
         {
             EditorGUILayout.LabelField("Created Object Settings");
             Transform createdTransform = _createdObject.transform;
@@ -67,14 +83,14 @@ public class LevelBuilder : EditorWindow
             createdTransform.rotation =
                 Quaternion.Euler(EditorGUILayout.Vector3Field("Rotation", createdTransform.rotation.eulerAngles));
             createdTransform.localScale = EditorGUILayout.Vector3Field("Scale", createdTransform.localScale);
-        }
+        }*/
 
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         _building = GUILayout.Toggle(_building, "Start building", "Button", GUILayout.Height(60));
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         EditorGUILayout.BeginVertical(GUI.skin.window);
         _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
-        DrawCatalog(GetCatalogIcons(), width, height);
+        DrawCatalog(GetCatalogIcons());
         EditorGUILayout.EndScrollView();
         EditorGUILayout.EndVertical();
     }
@@ -131,24 +147,21 @@ public class LevelBuilder : EditorWindow
     {
         rotation = _createdObject.transform.rotation.eulerAngles;
 
-        Debug.Log(Event.current.type);
         if (Event.current.type == EventType.KeyDown)
         {
-            Debug.Log(Event.current.keyCode);
-            
             if (Event.current.keyCode == KeyCode.Q)
             {
-                rotation.y-=_rotationSpeed;
+                rotation.y -= _rotationSpeed;
                 return true;
             }
-            
+
             if (Event.current.keyCode == KeyCode.E)
             {
-                rotation.y+=_rotationSpeed;
+                rotation.y += _rotationSpeed;
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -208,9 +221,15 @@ public class LevelBuilder : EditorWindow
         _selectedElement = GUILayout.SelectionGrid(_selectedElement, catalogIcons.ToArray(), 4, GUILayout.Width(width), GUILayout.Height(height));
     }*/
 
-    private void DrawCatalog(List<GUIContent> catalogIcons, int width, int height)
+    private void DrawCatalog(List<GUIContent> catalogIcons)
     {
-        _selectedElement = GUILayout.SelectionGrid(_selectedElement, catalogIcons.ToArray(), 4, GUILayout.Width(width),
+        int xIconCount = (int)position.width / (int)_iconDimensions.x;
+        int yIconCount = catalogIcons.Count / xIconCount;
+        float width = xIconCount * _iconDimensions.x;
+        float height = yIconCount * _iconDimensions.y;
+
+        _selectedElement = GUILayout.SelectionGrid(_selectedElement, catalogIcons.ToArray(), xIconCount,
+            GUILayout.Width(width),
             GUILayout.Height(height));
     }
 
@@ -230,9 +249,8 @@ public class LevelBuilder : EditorWindow
     private void RefreshCatalog(string path)
     {
         _catalog.Clear();
-
-        System.IO.Directory.CreateDirectory(path);
-        string[] prefabFiles = System.IO.Directory.GetFiles(path, "*.prefab");
+        Directory.CreateDirectory(path);
+        string[] prefabFiles = Directory.GetFiles(path, "*.prefab");
         foreach (var prefabFile in prefabFiles)
             _catalog.Add(AssetDatabase.LoadAssetAtPath(prefabFile, typeof(GameObject)) as GameObject);
     }
