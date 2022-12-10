@@ -15,6 +15,7 @@ public class LevelBuilder : EditorWindow
     private const float _rotationSpeed = 2;
     private const float _scaleSpeed = 1.3f;
     private const string _propLayerName = "Prop";
+    private const float _half = 0.5f;
 
     private readonly Vector2 _iconDimensions = new Vector2(100, 100);
 
@@ -40,7 +41,7 @@ public class LevelBuilder : EditorWindow
         SceneView.duringSceneGui += OnSceneGUI;
     }
 
-   private void OnGUI()
+    private void OnGUI()
     {
         _selectedTabNumber = GUILayout.Toolbar(_selectedTabNumber, _tabNames);
 
@@ -88,19 +89,19 @@ public class LevelBuilder : EditorWindow
 
     private void OnSceneGUI(SceneView sceneView)
     {
-        if (_building)
+        if (_building == false)
+            return;
+
+        sceneView.Focus();
+
+        if (_createdObject == null)
+            CreateObject();
+
+        if (Raycast(out Vector3 contactPoint))
         {
-            sceneView.Focus();
-
-            if (_createdObject == null)
-                CreateObject();
-
-            if (Raycast(out Vector3 contactPoint))
-            {
-                ManipulateCreatedObject(contactPoint);
-                DrawPointer(Color.red);
-                sceneView.Repaint();
-            }
+            DrawPointer(Color.red);
+            ManipulateCreatedObject(contactPoint);
+            sceneView.Repaint();
         }
     }
 
@@ -124,8 +125,13 @@ public class LevelBuilder : EditorWindow
         {
             Bounds bounds = GetCreatedObjectBounds();
 
-            if (Physics.OverlapBox(bounds.center, bounds.size / 2, _createdObject.transform.rotation,
-                    LayerMask.GetMask(_propLayerName)).Length > 0)
+            if (Physics.OverlapBox
+                (
+                    bounds.center,
+                    bounds.size * _half,
+                    _createdObject.transform.rotation,
+                    LayerMask.GetMask(_propLayerName)
+                ).Length > 0)
                 return;
 
             _building = false;
@@ -183,8 +189,13 @@ public class LevelBuilder : EditorWindow
         Ray guiRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
         contactPoint = Vector3.zero;
 
-        if (Physics.Raycast(guiRay, out RaycastHit raycastHit, Single.PositiveInfinity,
-                LayerMask.GetMask(LayerMask.LayerToName(_parent.layer))))
+        if (Physics.Raycast
+            (
+                guiRay,
+                out RaycastHit raycastHit,
+                Single.PositiveInfinity,
+                LayerMask.GetMask(LayerMask.LayerToName(_parent.layer))
+            ))
         {
             contactPoint = raycastHit.point;
             return true;
@@ -196,7 +207,6 @@ public class LevelBuilder : EditorWindow
     private void DrawPointer(Color color)
     {
         Bounds bounds = GetCreatedObjectBounds();
-
         Handles.color = color;
         Handles.DrawWireCube(bounds.center, bounds.size);
     }
@@ -212,7 +222,6 @@ public class LevelBuilder : EditorWindow
     private bool CheckPlacementInput()
     {
         HandleUtility.AddDefaultControl(0);
-
         return Event.current.type == EventType.MouseDown && Event.current.button == 0;
     }
 
@@ -233,9 +242,14 @@ public class LevelBuilder : EditorWindow
         float width = xIconCount * _iconDimensions.x;
         float height = yIconCount * _iconDimensions.y;
 
-        _selectedElement = GUILayout.SelectionGrid(_selectedElement, catalogIcons.ToArray(), xIconCount,
+        _selectedElement = GUILayout.SelectionGrid
+        (
+            _selectedElement,
+            catalogIcons.ToArray(),
+            xIconCount,
             GUILayout.Width(width),
-            GUILayout.Height(height));
+            GUILayout.Height(height)
+        );
     }
 
     private List<GUIContent> GetCatalogIcons()
@@ -256,6 +270,7 @@ public class LevelBuilder : EditorWindow
         _catalog.Clear();
         Directory.CreateDirectory(path);
         string[] prefabFiles = Directory.GetFiles(path, "*.prefab");
+
         foreach (var prefabFile in prefabFiles)
             _catalog.Add(AssetDatabase.LoadAssetAtPath(prefabFile, typeof(GameObject)) as GameObject);
     }
