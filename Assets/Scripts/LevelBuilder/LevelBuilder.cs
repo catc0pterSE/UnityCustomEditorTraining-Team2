@@ -75,17 +75,6 @@ public class LevelBuilder : EditorWindow
         RefreshCatalog(assetPath);
         _parent = (GameObject)EditorGUILayout.ObjectField("Parent", _parent, typeof(GameObject), true);
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-
-        /*if (_createdObject != null)
-        {
-            EditorGUILayout.LabelField("Created Object Settings");
-            Transform createdTransform = _createdObject.transform;
-            createdTransform.position = EditorGUILayout.Vector3Field("Position", createdTransform.position);
-            createdTransform.rotation =
-                Quaternion.Euler(EditorGUILayout.Vector3Field("Rotation", createdTransform.rotation.eulerAngles));
-            createdTransform.localScale = EditorGUILayout.Vector3Field("Scale", createdTransform.localScale);
-        }*/
-
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         _building = GUILayout.Toggle(_building, "Start building", "Button", GUILayout.Height(60));
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
@@ -95,24 +84,6 @@ public class LevelBuilder : EditorWindow
         EditorGUILayout.EndScrollView();
         EditorGUILayout.EndVertical();
     }
-
-    /*private void OnSceneGUI(SceneView sceneView)
-    {
-        if (_building)
-        {
-            if (Raycast(out Vector3 contactPoint))
-            {
-                DrawPointer(contactPoint, Color.red);
-
-                if (CheckInput())
-                {
-                    CreateObject(contactPoint);
-                }
-
-                sceneView.Repaint();
-            }
-        }
-    }*/
 
     private void OnSceneGUI(SceneView sceneView)
     {
@@ -161,9 +132,8 @@ public class LevelBuilder : EditorWindow
     {
         newScale = _createdObject.transform.localScale;
 
-        /*if (Event.current.type == EventType.ScrollWheel && Event.current.type == EventType.KeyDown)
+        /*if (Event.current.type == EventType.ScrollWheel)
         {
-            Debug.Log("!");
             if (Event.current.delta.y > 0)
             {
                 newScale *= _scaleSpeed;
@@ -246,19 +216,6 @@ public class LevelBuilder : EditorWindow
         return Event.current.type == EventType.MouseDown && Event.current.button == 0;
     }
 
-    /*private void CreateObject(Vector3 position)
-    {
-        if (_selectedElement < _catalog.Count)
-        {
-            GameObject prefab = _catalog[_selectedElement];
-            _createdObject = Instantiate(prefab);
-            _createdObject.transform.position = position;
-            _createdObject.transform.parent = _parent.transform;
-
-            Undo.RegisterCreatedObjectUndo(_createdObject, "Create");
-        }
-    }*/
-
     private void CreateObject()
     {
         if (_selectedElement < _catalog.Count == false)
@@ -268,11 +225,6 @@ public class LevelBuilder : EditorWindow
         _createdObject = Instantiate(prefab, _parent.transform, true);
         Undo.RegisterCreatedObjectUndo(_createdObject, "Create");
     }
-
-    /*private void DrawCatalog(List<GUIContent> catalogIcons, int width, int height)
-    {
-        _selectedElement = GUILayout.SelectionGrid(_selectedElement, catalogIcons.ToArray(), 4, GUILayout.Width(width), GUILayout.Height(height));
-    }*/
 
     private void DrawCatalog(List<GUIContent> catalogIcons)
     {
