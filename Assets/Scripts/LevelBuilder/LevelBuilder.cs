@@ -26,6 +26,7 @@ public class LevelBuilder : EditorWindow
     private GameObject _createdObject;
     private GameObject _parent;
     private float _runningTime;
+    private bool _isSubscribedOnSceneGUI;
 
     [MenuItem("Level/Builder")]
     private static void ShowWindow()
@@ -35,8 +36,11 @@ public class LevelBuilder : EditorWindow
 
     private void OnFocus()
     {
-        SceneView.duringSceneGui -= OnSceneGUI;
-        SceneView.duringSceneGui += OnSceneGUI;
+        if (_isSubscribedOnSceneGUI == false)
+        {
+            SceneView.duringSceneGui += OnSceneGUI;
+            _isSubscribedOnSceneGUI = true;
+        }
     }
 
     private void OnGUI()
@@ -115,6 +119,8 @@ public class LevelBuilder : EditorWindow
 
     private void OnSceneGUI(SceneView sceneView)
     {
+        sceneView.Focus();
+        
         if (_building)
         {
             if (_createdObject == null)
@@ -122,6 +128,9 @@ public class LevelBuilder : EditorWindow
 
             if (Raycast(out Vector3 contactPoint))
             {
+                Debug.Log(_createdObject);
+
+
                 DrawPointer(contactPoint, Color.red);
                 _createdObject.transform.position = contactPoint;
 
