@@ -35,74 +35,43 @@ public class LevelBuilder : EditorWindow
     {
         _selectedTabNumber = GUILayout.Toolbar(_selectedTabNumber, _tabNames);
 
-        switch (_selectedTabNumber)
+        switch (_selectedTabNumber) //TODO: scale grid size automatically
         {
             case 0:
-                RefreshCatalog(_pathBuildings);
-                _parent = (GameObject)EditorGUILayout.ObjectField("Parent", _parent, typeof(GameObject), true);
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-                if (_createdObject != null)
-                {
-                    EditorGUILayout.LabelField("Created Object Settings");
-                    Transform createdTransform = _createdObject.transform;
-                    createdTransform.position = EditorGUILayout.Vector3Field("Position", createdTransform.position);
-                    createdTransform.rotation = Quaternion.Euler(EditorGUILayout.Vector3Field("Position", createdTransform.rotation.eulerAngles));
-                    createdTransform.localScale = EditorGUILayout.Vector3Field("Position", createdTransform.localScale);
-                }
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-                _building = GUILayout.Toggle(_building, "Start building", "Button", GUILayout.Height(60));
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-                EditorGUILayout.BeginVertical(GUI.skin.window);
-                _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
-                DrawCatalog(GetCatalogIcons(), "Buildings", 400, 1000);
-                EditorGUILayout.EndScrollView();
-                EditorGUILayout.EndVertical();
+                DrawAssetTab(_pathBuildings, 400, 1000);
                 break;
             case 1:
-                RefreshCatalog(_pathPlants);
-                _parent = (GameObject)EditorGUILayout.ObjectField("Parent", _parent, typeof(GameObject), true);
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-                if (_createdObject != null)
-                {
-                    EditorGUILayout.LabelField("Created Object Settings");
-                    Transform createdTransform = _createdObject.transform;
-                    createdTransform.position = EditorGUILayout.Vector3Field("Position", createdTransform.position);
-                    createdTransform.rotation = Quaternion.Euler(EditorGUILayout.Vector3Field("Position", createdTransform.rotation.eulerAngles));
-                    createdTransform.localScale = EditorGUILayout.Vector3Field("Position", createdTransform.localScale);
-                }
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-                _building = GUILayout.Toggle(_building, "Start building", "Button", GUILayout.Height(60));
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-                EditorGUILayout.BeginVertical(GUI.skin.window);
-                _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
-                DrawCatalog(GetCatalogIcons(), "Props", 400, 1000);
-                EditorGUILayout.EndScrollView();
-                EditorGUILayout.EndVertical();
+                DrawAssetTab(_pathPlants, 400, 1000);
                 break;
             case 2:
-                RefreshCatalog(_pathProps);
-                _parent = (GameObject)EditorGUILayout.ObjectField("Parent", _parent, typeof(GameObject), true);
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-                if (_createdObject != null)
-                {
-                    EditorGUILayout.LabelField("Created Object Settings");
-                    Transform createdTransform = _createdObject.transform;
-                    createdTransform.position = EditorGUILayout.Vector3Field("Position", createdTransform.position);
-                    createdTransform.rotation = Quaternion.Euler(EditorGUILayout.Vector3Field("Position", createdTransform.rotation.eulerAngles));
-                    createdTransform.localScale = EditorGUILayout.Vector3Field("Position", createdTransform.localScale);
-                }
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-                _building = GUILayout.Toggle(_building, "Start building", "Button", GUILayout.Height(60));
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-                EditorGUILayout.BeginVertical(GUI.skin.window);
-                _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
-                DrawCatalog(GetCatalogIcons(), "Props", 400, 10000);
-                EditorGUILayout.EndScrollView();
-                EditorGUILayout.EndVertical();
+                DrawAssetTab(_pathProps, 400, 10000);
                 break;
         }
     }
 
+    private void DrawAssetTab(string assetPath, int width, int height)
+    {
+        RefreshCatalog(assetPath);
+        _parent = (GameObject)EditorGUILayout.ObjectField("Parent", _parent, typeof(GameObject), true);
+        EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+        if (_createdObject != null)
+        {
+            EditorGUILayout.LabelField("Created Object Settings");
+            Transform createdTransform = _createdObject.transform;
+            createdTransform.position = EditorGUILayout.Vector3Field("Position", createdTransform.position);
+            createdTransform.rotation = Quaternion.Euler(EditorGUILayout.Vector3Field("Position", createdTransform.rotation.eulerAngles));
+            createdTransform.localScale = EditorGUILayout.Vector3Field("Position", createdTransform.localScale);
+        }
+        EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+        _building = GUILayout.Toggle(_building, "Start building", "Button", GUILayout.Height(60));
+        EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+        EditorGUILayout.BeginVertical(GUI.skin.window);
+        _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
+        DrawCatalog(GetCatalogIcons(), width, height);
+        EditorGUILayout.EndScrollView();
+        EditorGUILayout.EndVertical();
+    }
+    
     private void OnSceneGUI(SceneView sceneView)
     {
         if (_building)
@@ -153,7 +122,6 @@ public class LevelBuilder : EditorWindow
         if (_selectedElement < _catalog.Count)
         {
             GameObject prefab = _catalog[_selectedElement];
-            //GameObject gameObject = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
             _createdObject = Instantiate(prefab);
             _createdObject.transform.position = position;
             _createdObject.transform.parent = _parent.transform;
@@ -162,10 +130,9 @@ public class LevelBuilder : EditorWindow
         }
     }
 
-    private void DrawCatalog(List<GUIContent> catalogIcons, string name, int width, int Height)
+    private void DrawCatalog(List<GUIContent> catalogIcons, int width, int height)
     {
-        GUILayout.Label(name);
-        _selectedElement = GUILayout.SelectionGrid(_selectedElement, catalogIcons.ToArray(), 4, GUILayout.Width(width), GUILayout.Height(Height));
+        _selectedElement = GUILayout.SelectionGrid(_selectedElement, catalogIcons.ToArray(), 4, GUILayout.Width(width), GUILayout.Height(height));
     }
 
     private List<GUIContent> GetCatalogIcons()
