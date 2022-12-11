@@ -33,6 +33,7 @@ namespace LevelBuilder
         private GameObject _createdObject = null;
         private GameObject _parent;
         private LayerMask _layerMask;
+
         private string[] _tabNames =
             { "Buildings", "Plants", "Props", "Rocks", "Skeletons", "ShipWreck", "Vehicles", "Other" };
 
@@ -60,7 +61,7 @@ namespace LevelBuilder
                 return;
 
             Thread.Sleep(1);
-            
+
             _selectedTabNumber = GUILayout.Toolbar(_selectedTabNumber, _tabNames);
 
             switch (_selectedTabNumber)
@@ -208,7 +209,7 @@ namespace LevelBuilder
 
             return false;
         }
-        
+
         private bool CheckPlacementInput()
         {
             HandleUtility.AddDefaultControl(0);
@@ -279,12 +280,12 @@ namespace LevelBuilder
 
         private List<GUIContent> GetCatalogIcons()
         {
+            Debug.Log("!");
             List<GUIContent> catalogIcons = new List<GUIContent>();
 
             foreach (var element in _currentCatalog)
             {
                 Texture2D texture = AssetPreview.GetAssetPreview(element);
-
                 catalogIcons.Add(new GUIContent(texture));
             }
 
@@ -305,7 +306,7 @@ namespace LevelBuilder
 
                 _catalogs.Add(path, catalog);
             }
-            
+
             if (_catalogs[path].Count != Directory.GetFiles(path, "*.prefab").Length)
                 Close();
 
