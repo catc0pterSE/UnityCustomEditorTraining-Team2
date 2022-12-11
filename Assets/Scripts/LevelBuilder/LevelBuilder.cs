@@ -17,7 +17,6 @@ namespace LevelBuilder
         private const string _pathShip = "Assets/Editor Resources/ShipWreck";
         private const string _pathVehicles = "Assets/Editor Resources/Vehicles";
         private const string _pathOther = "Assets/Editor Resources/Other";
-        private const string _propLayerName = "Prop";
         private const float _half = 0.5f;
 
         private readonly Vector2 _iconDimensions = new Vector2(100, 100);
@@ -35,6 +34,8 @@ namespace LevelBuilder
         private bool _leapToSurface;
         private float _rotationSpeed = 2;
         private float _scaleSpeed = 1.3f;
+        private LayerMask _propLayerMask;
+        private string[] _layerNames;
         private float _verticalMovementSpeed = 20f;
         private int _selectedTabNumber;
         private GameObject _createdObject = null;
@@ -117,14 +118,16 @@ namespace LevelBuilder
             _collisionsAllowed = GUILayout.Toggle(_collisionsAllowed, "Collisions Allowed", "Button", GUILayout.Height(30));
             _leapToSurface = GUILayout.Toggle(_leapToSurface, "Leap to Surface", "Button", GUILayout.Height(30));
             EditorGUILayout.EndHorizontal();
-            EditorGUILayout.BeginVertical();
             GUILayout.Label("RotationSpeed");
             _rotationSpeed = GUILayout.HorizontalSlider(_rotationSpeed, 0, 40, GUILayout.Height(20));
             GUILayout.Label("ScaleSpeed");
             _scaleSpeed = GUILayout.HorizontalSlider(_scaleSpeed, 0, 10, GUILayout.Height(20));
             GUILayout.Label("VerticalMovementSpeed");
             _verticalMovementSpeed = GUILayout.HorizontalSlider(_verticalMovementSpeed, 0, 20, GUILayout.Height(20));
-            EditorGUILayout.EndVertical();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("PropLayerMask", GUILayout.Width(150));
+            _propLayerMask = EditorGUILayout.LayerField(_propLayerMask, GUILayout.Width(200));
+            GUILayout.EndHorizontal();
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             EditorGUILayout.BeginVertical(GUI.skin.window);
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
@@ -189,12 +192,12 @@ namespace LevelBuilder
                             bounds.center,
                             bounds.size * _half,
                             _createdObject.transform.rotation,
-                            LayerMask.GetMask(_propLayerName)
+                            _propLayerMask
                         ).Length > 0)
                         return;
                 }
 
-                _createdObject.layer = LayerMask.NameToLayer(_propLayerName);
+                _createdObject.layer = _propLayerMask;
                 _building = false;
                 _createdObject = null;
             }
