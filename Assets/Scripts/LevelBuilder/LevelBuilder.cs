@@ -19,6 +19,7 @@ namespace LevelBuilder
         private const string _pathOther = "Assets/Editor Resources/Other";
         private const float _rotationSpeed = 2;
         private const float _scaleSpeed = 1.3f;
+        private const float _verticalMovementSpeed = 20f;
         private const string _propLayerName = "Prop";
         private const float _half = 0.5f;
 
@@ -36,8 +37,8 @@ namespace LevelBuilder
         private int _selectedTabNumber;
         private GameObject _createdObject = null;
         private GameObject _parent;
-        private LayerMask _layerMask;
-
+        private float _lastYPosition;
+        
         private string[] _tabNames =
             { "Buildings", "Plants", "Props", "Rocks", "Skeletons", "ShipWreck", "Vehicles", "Other" };
 
@@ -97,7 +98,8 @@ namespace LevelBuilder
             EditorGUILayout.HelpBox(
                 "To rotate the object in Y axis, use the Q and E buttons. Q counterclockwise and E clockwise" +
                 "\nTo upscale object use W, to downscale use S" +
-                "\nUse A to lean left, D to lean right, R to lean forward, F to lean backward",
+                "\nUse A to lean left, D to lean right, R to lean forward, F to lean backward" +
+                "\nUse T to move object up, G to move object down",
                 MessageType.Info);
         }
 
@@ -137,7 +139,10 @@ namespace LevelBuilder
 
         private void ManipulateCreatedObject(Vector3 contactPoint)
         {
+            float modifiedYPosition = GetYPosition(_lastYPosition);
+            contactPoint.y = modifiedYPosition;
             _createdObject.transform.position = contactPoint;
+            _lastYPosition = _createdObject.transform.position.y;
 
             if (CheckRotationInput(out Vector3 rotation))
             {
@@ -170,23 +175,48 @@ namespace LevelBuilder
             }
         }
 
+        private bool CheckKeyboardInput()
+        {
+            return Event.current.type == EventType.KeyDown;
+        }
+
+        private float GetYPosition(float currentYPosition)
+        {
+            if (CheckKeyboardInput() == false)
+                return currentYPosition;
+
+            float newYPOsition = currentYPosition;
+
+            if (Event.current.keyCode == KeyCode.T)
+            {
+                newYPOsition += _verticalMovementSpeed;
+            }
+
+            if (Event.current.keyCode == KeyCode.G)
+            {
+                newYPOsition -= _verticalMovementSpeed;
+            }
+
+            return newYPOsition;
+        }
+
         private bool CheckScaleInput(out Vector3 newScale)
         {
             newScale = _createdObject.transform.localScale;
 
-            if (Event.current.type == EventType.KeyDown)
-            {
-                if (Event.current.keyCode == KeyCode.W)
-                {
-                    newScale *= _scaleSpeed;
-                    return true;
-                }
+            if (CheckKeyboardInput() == false)
+                return false;
 
-                if (Event.current.keyCode == KeyCode.S)
-                {
-                    newScale /= _scaleSpeed;
-                    return true;
-                }
+            if (Event.current.keyCode == KeyCode.W)
+            {
+                newScale *= _scaleSpeed;
+                return true;
+            }
+
+            if (Event.current.keyCode == KeyCode.S)
+            {
+                newScale /= _scaleSpeed;
+                return true;
             }
 
             return false;
@@ -196,32 +226,32 @@ namespace LevelBuilder
         {
             rotation = _createdObject.transform.rotation.eulerAngles;
 
-            if (Event.current.type != EventType.KeyDown)
+            if (CheckKeyboardInput() == false)
                 return false;
 
             switch (Event.current.keyCode)
             {
                 case KeyCode.Q:
                     rotation.y -= _rotationSpeed;
-                    break;
+                    return true;
                 case KeyCode.E:
                     rotation.y += _rotationSpeed;
-                    break;
+                    return true;
                 case KeyCode.A:
                     rotation.z -= _rotationSpeed;
-                    break;
+                    return true;
                 case KeyCode.D:
                     rotation.z += _rotationSpeed;
-                    break;
+                    return true;
                 case KeyCode.R:
                     rotation.x += _rotationSpeed;
-                    break;
+                    return true;
                 case KeyCode.F:
                     rotation.x -= _rotationSpeed;
-                    break;
+                    return true;
             }
 
-            return true;
+            return false;
         }
 
         private bool CheckPlacementInput()
