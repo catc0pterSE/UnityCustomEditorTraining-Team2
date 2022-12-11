@@ -62,14 +62,14 @@ namespace LevelBuilder
 
         private void OnGUI()
         {
+            if (_createdObject != null)
+                DestroyImmediate(_createdObject);
+            
             _parent = (GameObject)EditorGUILayout.ObjectField("Parent", _parent, typeof(GameObject), true);
 
             if (_parent == null)
                 return;
             
-            if (_createdObject!=null)
-                DestroyImmediate(_createdObject);
-
             _selectedTabNumber = GUILayout.Toolbar(_selectedTabNumber, _tabNames, GUILayout.Height(60));
 
             switch (_selectedTabNumber)
@@ -137,15 +137,13 @@ namespace LevelBuilder
 
         private void OnSceneGUI(SceneView sceneView)
         {
-            if (_building == false)
+            if (_building==false)
                 return;
-
-            sceneView.Focus();
-
-            if (_createdObject == null)
-            {
+            
+            if (_createdObject==null)
                 CreateObject();
-            }
+            
+            sceneView.Focus();
 
             if (Raycast(out Vector3 contactPoint))
             {
@@ -195,9 +193,8 @@ namespace LevelBuilder
                         ).Length > 0)
                         return;
                 }
-
+                
                 _createdObject.layer = _propLayerMask;
-                _building = false;
                 _createdObject = null;
             }
         }
