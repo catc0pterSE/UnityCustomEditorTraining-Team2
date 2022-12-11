@@ -120,7 +120,7 @@ namespace LevelBuilder
             GUILayout.Label("RotationSpeed");
             _rotationSpeed = GUILayout.HorizontalSlider(_rotationSpeed, 0, 40, GUILayout.Height(20));
             GUILayout.Label("ScaleSpeed");
-            _scaleSpeed = GUILayout.HorizontalSlider(_scaleSpeed, 0, 10, GUILayout.Height(20));
+            _scaleSpeed = GUILayout.HorizontalSlider(_scaleSpeed, 1, 10, GUILayout.Height(20));
             GUILayout.Label("VerticalMovementSpeed");
             _verticalMovementSpeed = GUILayout.HorizontalSlider(_verticalMovementSpeed, 0, 20, GUILayout.Height(20));
             GUILayout.BeginHorizontal();
