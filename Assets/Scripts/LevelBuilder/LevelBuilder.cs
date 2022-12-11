@@ -34,11 +34,11 @@ namespace LevelBuilder
         private Vector2 _scrollPosition;
         private int _selectedElement;
         private bool _building;
+        private bool _collisionsAllowed;
         private int _selectedTabNumber;
         private GameObject _createdObject = null;
         private GameObject _parent;
         private float _lastYPosition;
-        
         private string[] _tabNames =
             { "Buildings", "Plants", "Props", "Rocks", "Skeletons", "ShipWreck", "Vehicles", "Other" };
 
@@ -108,7 +108,10 @@ namespace LevelBuilder
             RefreshCurrentCatalog(assetPath);
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+            EditorGUILayout.BeginHorizontal();
             _building = GUILayout.Toggle(_building, "Start building", "Button", GUILayout.Height(60));
+            _collisionsAllowed = GUILayout.Toggle(_collisionsAllowed, "Collisions Allowed", "Button", GUILayout.Height(60));
+            EditorGUILayout.EndHorizontal();
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             EditorGUILayout.BeginVertical(GUI.skin.window);
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
@@ -158,16 +161,19 @@ namespace LevelBuilder
 
             if (CheckPlacementInput())
             {
-                Bounds bounds = GetCreatedObjectBounds();
-
-                if (Physics.OverlapBox
-                    (
-                        bounds.center,
-                        bounds.size * _half,
-                        _createdObject.transform.rotation,
-                        LayerMask.GetMask(_propLayerName)
-                    ).Length > 0)
-                    return;
+                if (_collisionsAllowed == false)
+                {
+                    Bounds bounds = GetCreatedObjectBounds();
+                
+                    if (Physics.OverlapBox
+                        (
+                            bounds.center,
+                            bounds.size * _half,
+                            _createdObject.transform.rotation,
+                            LayerMask.GetMask(_propLayerName)
+                        ).Length > 0)
+                        return;
+                }
 
                 _createdObject.layer = LayerMask.NameToLayer(_propLayerName);
                 _building = false;
