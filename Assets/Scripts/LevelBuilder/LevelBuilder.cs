@@ -35,6 +35,7 @@ namespace LevelBuilder
         private int _selectedElement;
         private bool _building;
         private bool _collisionsAllowed;
+        private bool _leapToSurface;
         private int _selectedTabNumber;
         private GameObject _createdObject = null;
         private GameObject _parent;
@@ -64,6 +65,9 @@ namespace LevelBuilder
 
             if (_parent == null)
                 return;
+            
+            if (_createdObject!=null)
+                DestroyImmediate(_createdObject);
 
             _selectedTabNumber = GUILayout.Toolbar(_selectedTabNumber, _tabNames);
 
@@ -108,9 +112,10 @@ namespace LevelBuilder
             RefreshCurrentCatalog(assetPath);
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+            _building = GUILayout.Toggle(_building, "Start building", "Button", GUILayout.Height(40));
             EditorGUILayout.BeginHorizontal();
-            _building = GUILayout.Toggle(_building, "Start building", "Button", GUILayout.Height(60));
-            _collisionsAllowed = GUILayout.Toggle(_collisionsAllowed, "Collisions Allowed", "Button", GUILayout.Height(60));
+            _collisionsAllowed = GUILayout.Toggle(_collisionsAllowed, "Collisions Allowed", "Button", GUILayout.Height(30));
+            _leapToSurface = GUILayout.Toggle(_leapToSurface, "Leap to Surface", "Button", GUILayout.Height(30));
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             EditorGUILayout.BeginVertical(GUI.skin.window);
@@ -142,10 +147,16 @@ namespace LevelBuilder
 
         private void ManipulateCreatedObject(Vector3 contactPoint)
         {
-            float modifiedYPosition = GetYPosition(_lastYPosition);
-            contactPoint.y = modifiedYPosition;
-            _createdObject.transform.position = contactPoint;
-            _lastYPosition = _createdObject.transform.position.y;
+            if (_leapToSurface==false)
+            {
+                _lastYPosition = GetYPosition(_lastYPosition);
+                contactPoint.y = _lastYPosition;
+                _createdObject.transform.position = contactPoint;
+            }
+            else
+            {
+                _createdObject.transform.position = contactPoint;
+            }
 
             if (CheckRotationInput(out Vector3 rotation))
             {
