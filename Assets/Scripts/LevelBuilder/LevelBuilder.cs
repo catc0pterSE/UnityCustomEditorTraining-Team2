@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using UnityEditor;
 using UnityEngine;
 
@@ -34,13 +33,14 @@ namespace LevelBuilder
         private bool _leapToSurface;
         private float _rotationSpeed = 2;
         private float _scaleSpeed = 1.3f;
-        private LayerMask _propLayerMask;
+        private LayerMask _propLayer;
         private string[] _layerNames;
         private float _verticalMovementSpeed = 20f;
         private int _selectedTabNumber;
         private GameObject _createdObject = null;
         private GameObject _parent;
         private float _lastYPosition;
+
         private string[] _tabNames =
             { "Buildings", "Plants", "Props", "Rocks", "Skeletons", "ShipWreck", "Vehicles", "Other" };
 
@@ -64,12 +64,12 @@ namespace LevelBuilder
         {
             if (_createdObject != null)
                 DestroyImmediate(_createdObject);
-            
+
             _parent = (GameObject)EditorGUILayout.ObjectField("Parent", _parent, typeof(GameObject), true);
 
             if (_parent == null)
                 return;
-            
+
             _selectedTabNumber = GUILayout.Toolbar(_selectedTabNumber, _tabNames, GUILayout.Height(60));
 
             switch (_selectedTabNumber)
@@ -124,8 +124,8 @@ namespace LevelBuilder
             GUILayout.Label("VerticalMovementSpeed");
             _verticalMovementSpeed = GUILayout.HorizontalSlider(_verticalMovementSpeed, 0, 20, GUILayout.Height(20));
             GUILayout.BeginHorizontal();
-            GUILayout.Label("PropLayerMask", GUILayout.Width(150));
-            _propLayerMask = EditorGUILayout.LayerField(_propLayerMask, GUILayout.Width(200));
+            GUILayout.Label("Prop Layer", GUILayout.Width(150));
+            _propLayer = EditorGUILayout.LayerField(_propLayer, GUILayout.Width(200));
             GUILayout.EndHorizontal();
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             EditorGUILayout.BeginVertical(GUI.skin.window);
@@ -137,12 +137,12 @@ namespace LevelBuilder
 
         private void OnSceneGUI(SceneView sceneView)
         {
-            if (_building==false)
+            if (_building == false)
                 return;
-            
-            if (_createdObject==null)
+
+            if (_createdObject == null)
                 CreateObject();
-            
+
             sceneView.Focus();
 
             if (Raycast(out Vector3 contactPoint))
@@ -155,7 +155,7 @@ namespace LevelBuilder
 
         private void ManipulateCreatedObject(Vector3 contactPoint)
         {
-            if (_leapToSurface==false)
+            if (_leapToSurface == false)
             {
                 _lastYPosition = GetYPosition(_lastYPosition);
                 contactPoint.y = _lastYPosition;
@@ -183,18 +183,21 @@ namespace LevelBuilder
                 if (_collisionsAllowed == false)
                 {
                     Bounds bounds = GetCreatedObjectBounds();
-                
-                    if (Physics.OverlapBox
-                        (
-                            bounds.center,
-                            bounds.size * _half,
-                            _createdObject.transform.rotation,
-                            _propLayerMask
-                        ).Length > 0)
+
+
+                    Collider[] collisions = Physics.OverlapBox
+                    (
+                        bounds.center,
+                        bounds.size * _half,
+                        _createdObject.transform.rotation,
+                        LayerMask.GetMask(LayerMask.LayerToName(_propLayer))
+                    );
+
+                    if (collisions.Length > 0)
                         return;
                 }
-                
-                _createdObject.layer = _propLayerMask;
+
+                _createdObject.layer = _propLayer;
                 _createdObject = null;
             }
         }
