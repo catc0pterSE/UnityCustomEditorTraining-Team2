@@ -17,9 +17,6 @@ namespace LevelBuilder
         private const string _pathShip = "Assets/Editor Resources/ShipWreck";
         private const string _pathVehicles = "Assets/Editor Resources/Vehicles";
         private const string _pathOther = "Assets/Editor Resources/Other";
-        private const float _rotationSpeed = 2;
-        private const float _scaleSpeed = 1.3f;
-        private const float _verticalMovementSpeed = 20f;
         private const string _propLayerName = "Prop";
         private const float _half = 0.5f;
 
@@ -36,6 +33,9 @@ namespace LevelBuilder
         private bool _building;
         private bool _collisionsAllowed;
         private bool _leapToSurface;
+        private float _rotationSpeed = 2;
+        private float _scaleSpeed = 1.3f;
+        private float _verticalMovementSpeed = 20f;
         private int _selectedTabNumber;
         private GameObject _createdObject = null;
         private GameObject _parent;
@@ -117,6 +117,14 @@ namespace LevelBuilder
             _collisionsAllowed = GUILayout.Toggle(_collisionsAllowed, "Collisions Allowed", "Button", GUILayout.Height(30));
             _leapToSurface = GUILayout.Toggle(_leapToSurface, "Leap to Surface", "Button", GUILayout.Height(30));
             EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginVertical();
+            GUILayout.Label("RotationSpeed");
+            _rotationSpeed = GUILayout.HorizontalSlider(_rotationSpeed, 0, 40, GUILayout.Height(20));
+            GUILayout.Label("ScaleSpeed");
+            _scaleSpeed = GUILayout.HorizontalSlider(_scaleSpeed, 0, 10, GUILayout.Height(20));
+            GUILayout.Label("VerticalMovementSpeed");
+            _verticalMovementSpeed = GUILayout.HorizontalSlider(_verticalMovementSpeed, 0, 20, GUILayout.Height(20));
+            EditorGUILayout.EndVertical();
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             EditorGUILayout.BeginVertical(GUI.skin.window);
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
