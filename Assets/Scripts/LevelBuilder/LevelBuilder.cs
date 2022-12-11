@@ -25,6 +25,10 @@ namespace LevelBuilder
         private readonly Vector2 _iconDimensions = new Vector2(100, 100);
 
         private Dictionary<string, List<GameObject>> _catalogs = new Dictionary<string, List<GameObject>>();
+
+        private Dictionary<List<GameObject>, List<GUIContent>> _iconCatalogs =
+            new Dictionary<List<GameObject>, List<GUIContent>>();
+
         private List<GameObject> _currentCatalog = new List<GameObject>();
         private Vector2 _scrollPosition;
         private int _selectedElement;
@@ -59,8 +63,6 @@ namespace LevelBuilder
 
             if (_parent == null)
                 return;
-
-            Thread.Sleep(1);
 
             _selectedTabNumber = GUILayout.Toolbar(_selectedTabNumber, _tabNames);
 
@@ -280,16 +282,30 @@ namespace LevelBuilder
 
         private List<GUIContent> GetCatalogIcons()
         {
-            Debug.Log("!");
-            List<GUIContent> catalogIcons = new List<GUIContent>();
-
-            foreach (var element in _currentCatalog)
+            if (_iconCatalogs.ContainsKey(_currentCatalog) == false)
             {
-                Texture2D texture = AssetPreview.GetAssetPreview(element);
-                catalogIcons.Add(new GUIContent(texture));
+                List<GUIContent> catalogIcons = new List<GUIContent>();
+
+                foreach (var element in _currentCatalog)
+                {
+                    Texture2D texture = null;
+
+                    while (texture == null)
+                    {
+                        texture = AssetPreview.GetAssetPreview(element);
+                    }
+
+                    Texture2D cloneTexture = new Texture2D(texture.width, texture.height);
+                    cloneTexture.SetPixels(texture.GetPixels());
+                    cloneTexture.Apply();
+
+                    catalogIcons.Add(new GUIContent(cloneTexture));
+                }
+                
+                _iconCatalogs.Add(_currentCatalog, catalogIcons);
             }
 
-            return catalogIcons;
+            return _iconCatalogs[_currentCatalog];
         }
 
         private void RefreshCurrentCatalog(string path)
