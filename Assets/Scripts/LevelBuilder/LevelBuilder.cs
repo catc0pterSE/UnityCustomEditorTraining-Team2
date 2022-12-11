@@ -12,6 +12,8 @@ public class LevelBuilder : EditorWindow
     private const string _pathRocks = "Assets/Editor Resources/Rocks";
     private const string _pathSkeletons = "Assets/Editor Resources/Skeletons";
     private const string _pathShip = "Assets/Editor Resources/ShipWreck";
+    private const string _pathVehicles = "Assets/Editor Resources/Vehicles";
+    private const string _pathOther = "Assets/Editor Resources/Other";
     private const float _rotationSpeed = 2;
     private const float _scaleSpeed = 1.3f;
     private const string _propLayerName = "Prop";
@@ -24,7 +26,10 @@ public class LevelBuilder : EditorWindow
     private List<GameObject> _catalog = new List<GameObject>();
     private bool _building;
     private int _selectedTabNumber;
-    private string[] _tabNames = { "Buildings", "Plants", "Props", "Rocks", "Skeletons", "ShipWreck" };
+
+    private string[] _tabNames =
+        { "Buildings", "Plants", "Props", "Rocks", "Skeletons", "ShipWreck", "Vehicles", "Other" };
+
     private GameObject _createdObject = null;
     private GameObject _parent;
     private LayerMask _layerMask;
@@ -74,6 +79,13 @@ public class LevelBuilder : EditorWindow
             case 5:
                 DrawGrid(_pathShip);
                 break;
+            case 6:
+                _building:
+                DrawGrid(_pathVehicles);
+                break;
+            case 7:
+                DrawGrid(_pathOther);
+                break;
         }
 
         EditorGUILayout.HelpBox(
@@ -99,7 +111,7 @@ public class LevelBuilder : EditorWindow
     {
         if (_building == false)
             return;
-        
+
         sceneView.Focus();
 
         if (_createdObject == null)
