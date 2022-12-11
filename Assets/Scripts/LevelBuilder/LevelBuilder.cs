@@ -70,7 +70,7 @@ namespace LevelBuilder
             if (_createdObject!=null)
                 DestroyImmediate(_createdObject);
 
-            _selectedTabNumber = GUILayout.Toolbar(_selectedTabNumber, _tabNames);
+            _selectedTabNumber = GUILayout.Toolbar(_selectedTabNumber, _tabNames, GUILayout.Height(60));
 
             switch (_selectedTabNumber)
             {
@@ -111,11 +111,10 @@ namespace LevelBuilder
         private void DrawGrid(string assetPath)
         {
             RefreshCurrentCatalog(assetPath);
-            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             _building = GUILayout.Toggle(_building, "Start building", "Button", GUILayout.Height(40));
             EditorGUILayout.BeginHorizontal();
-            _collisionsAllowed = GUILayout.Toggle(_collisionsAllowed, "Collisions Allowed", "Button", GUILayout.Height(30));
+            _collisionsAllowed =
+                GUILayout.Toggle(_collisionsAllowed, "Collisions Allowed", "Button", GUILayout.Height(30));
             _leapToSurface = GUILayout.Toggle(_leapToSurface, "Leap to Surface", "Button", GUILayout.Height(30));
             EditorGUILayout.EndHorizontal();
             GUILayout.Label("RotationSpeed");
