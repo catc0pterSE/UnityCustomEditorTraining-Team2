@@ -95,7 +95,9 @@ namespace LevelBuilder
             }
 
             EditorGUILayout.HelpBox(
-                "To rotate the object, use the Q and E buttons. Q counterclockwise and E clockwise\nTo upscale object use W, to downscale use S",
+                "To rotate the object in Y axis, use the Q and E buttons. Q counterclockwise and E clockwise" +
+                "\nTo upscale object use W, to downscale use S" +
+                "\nUse A to lean left, D to lean right, R to lean forward, F to lean backward",
                 MessageType.Info);
         }
 
@@ -194,22 +196,32 @@ namespace LevelBuilder
         {
             rotation = _createdObject.transform.rotation.eulerAngles;
 
-            if (Event.current.type == EventType.KeyDown)
-            {
-                if (Event.current.keyCode == KeyCode.Q)
-                {
-                    rotation.y -= _rotationSpeed;
-                    return true;
-                }
+            if (Event.current.type != EventType.KeyDown)
+                return false;
 
-                if (Event.current.keyCode == KeyCode.E)
-                {
+            switch (Event.current.keyCode)
+            {
+                case KeyCode.Q:
+                    rotation.y -= _rotationSpeed;
+                    break;
+                case KeyCode.E:
                     rotation.y += _rotationSpeed;
-                    return true;
-                }
+                    break;
+                case KeyCode.A:
+                    rotation.z -= _rotationSpeed;
+                    break;
+                case KeyCode.D:
+                    rotation.z += _rotationSpeed;
+                    break;
+                case KeyCode.R:
+                    rotation.x += _rotationSpeed;
+                    break;
+                case KeyCode.F:
+                    rotation.x -= _rotationSpeed;
+                    break;
             }
 
-            return false;
+            return true;
         }
 
         private bool CheckPlacementInput()
@@ -301,7 +313,7 @@ namespace LevelBuilder
 
                     catalogIcons.Add(new GUIContent(cloneTexture));
                 }
-                
+
                 _iconCatalogs.Add(_currentCatalog, catalogIcons);
             }
 
