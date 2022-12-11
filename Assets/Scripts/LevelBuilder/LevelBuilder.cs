@@ -80,7 +80,6 @@ public class LevelBuilder : EditorWindow
                 DrawGrid(_pathShip);
                 break;
             case 6:
-                _building:
                 DrawGrid(_pathVehicles);
                 break;
             case 7:
@@ -281,6 +280,7 @@ public class LevelBuilder : EditorWindow
         foreach (var element in _catalog)
         {
             Texture2D texture = AssetPreview.GetAssetPreview(element);
+
             catalogIcons.Add(new GUIContent(texture));
         }
 
